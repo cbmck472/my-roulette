@@ -48,23 +48,24 @@
     </div>
 
     <script>
+        // --- ここから書き換え ---
         const canvas = document.getElementById('roulette');
         const ctx = canvas.getContext('2d');
         const resultDiv = document.getElementById('result');
         const itemInput = document.getElementById('itemInput');
-        
+
         let items = [];
         const colors = ["#FF5722", "#FFC107", "#4CAF50", "#00BCD4", "#9C27B0", "#E91E63", "#3F51B5"];
         let currentRotation = 0;
 
-        // 1. 保存されたデータを読み込む
+        // 1. 保存データの読み込み
         function loadItems() {
             const saved = localStorage.getItem('roulette_items');
             if (saved) {
                 items = saved.split(',');
                 itemInput.value = saved;
             } else {
-                items = ["サンプル1", "サンプル2", "サンプル3"];
+                items = ["大吉", "中吉", "小吉", "凶"];
                 itemInput.value = items.join(',');
             }
             drawRoulette();
@@ -77,7 +78,7 @@
 
         // 3. 設定を保存
         function saveSettings() {
-            const val = itemInput.value.replace(/ /g, ''); // 空白除去
+            const val = itemInput.value.replace(/ /g, '');
             if (!val) return alert("項目を入れてね");
             localStorage.setItem('roulette_items', val);
             items = val.split(',');
@@ -102,11 +103,12 @@
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#fff";
                 ctx.font = "bold 16px sans-serif";
-                ctx.fillText(item.substring(0, 8), 180, 8); // 長すぎると切る
+                ctx.fillText(item.substring(0, 8), 180, 8);
                 ctx.restore();
             });
         }
 
+        // 回転アニメーション
         document.getElementById('spinBtn').addEventListener('click', function() {
             this.disabled = true;
             const spinDuration = 4000;
@@ -133,7 +135,18 @@
             requestAnimationFrame(animate);
         });
 
-        loadItems(); // 起動時に読み込み
+        // LIFFの初期化
+        window.onload = function() {
+            liff.init({
+                liffId: "2009036044-fRujSwxK"
+            }).then(() => {
+                console.log("LIFF初期化成功");
+                loadItems();
+            }).catch((err) => {
+                console.log("LIFF初期化失敗", err);
+                loadItems();
+            });
+        };   
     </script>
 </body>
 </html>
