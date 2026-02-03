@@ -18,8 +18,6 @@
         button { padding: 12px 50px; font-size: 18px; cursor: pointer; background: #00b900; color: #fff; border: none; border-radius: 30px; font-weight: bold; width: 250px; }
         .btn-sub { background: #666; padding: 8px 30px; font-size: 14px; margin-top: 20px; }
         #result { margin: 20px 0; font-size: 24px; font-weight: bold; color: #e91e63; min-height: 36px; }
-        
-        /* 設定画面のスタイル */
         #settingsOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; padding: 20px; box-sizing: border-box; }
         textarea { width: 100%; height: 150px; margin: 15px 0; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; }
         .hint { font-size: 12px; color: #777; margin-bottom: 20px; }
@@ -47,36 +45,36 @@
         <button onclick="saveSettings()">保存して戻る</button>
     </div>
 
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // --- ここから書き換え ---
         const canvas = document.getElementById('roulette');
         const ctx = canvas.getContext('2d');
         const resultDiv = document.getElementById('result');
         const itemInput = document.getElementById('itemInput');
 
-        let items = [];
+        // デフォルト項目
+        const DEFAULT_ITEMS = ["大吉", "中吉", "小吉", "凶"];
+        let items = [...DEFAULT_ITEMS];
         const colors = ["#FF5722", "#FFC107", "#4CAF50", "#00BCD4", "#9C27B0", "#E91E63", "#3F51B5"];
         let currentRotation = 0;
 
         // 1. 保存データの読み込み
         function loadItems() {
             const saved = localStorage.getItem('roulette_items');
-            if (saved) {
+            if (saved && saved.trim() !== "") {
                 items = saved.split(',');
                 itemInput.value = saved;
             } else {
-                items = ["大吉", "中吉", "小吉", "凶"];
-                itemInput.value = items.join(',');
+                items = [...DEFAULT_ITEMS];
+                itemInput.value = DEFAULT_ITEMS.join(',');
             }
-            drawRoulette();
+            drawRoulette(); // 読み込み後すぐに描画
         }
 
-        // 2. 設定画面の切り替え
         function toggleSettings(show) {
             document.getElementById('settingsOverlay').style.display = show ? 'block' : 'none';
         }
 
-        // 3. 設定を保存
         function saveSettings() {
             const val = itemInput.value.replace(/ /g, '');
             if (!val) return alert("項目を入れてね");
@@ -88,6 +86,7 @@
         }
 
         function drawRoulette() {
+            if (items.length === 0) return;
             const arc = (Math.PI * 2) / items.length;
             ctx.clearRect(0, 0, 400, 400);
             items.forEach((item, i) => {
@@ -108,7 +107,6 @@
             });
         }
 
-        // 回転アニメーション
         document.getElementById('spinBtn').addEventListener('click', function() {
             this.disabled = true;
             const spinDuration = 4000;
@@ -135,12 +133,16 @@
             requestAnimationFrame(animate);
         });
 
-        // LIFFの初期化
+        // 起動時の処理
         window.onload = function() {
+            // LIFF初期化を待たずに、まずは表示させる
+            loadItems();
+
             liff.init({
                 liffId: "2009036044-fRujSwxK"
             }).then(() => {
                 console.log("LIFF初期化成功");
+                // 初期化後に再度読み込み（必要あれば）
                 loadItems();
             }).catch((err) => {
                 console.log("LIFF初期化失敗", err);
